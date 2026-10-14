@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pan de Vida</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
+<style>
+:root{--bg1:#fff6dc;--bg2:#f3d58a;--tx:#4a3410;--gold:#b8860b;--card:rgba(255,255,255,.72);--glow:rgba(255,200,60,.55);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg1:#0d1330;--bg2:#2a2150;--tx:#fdf1cf;--gold:#f4c95d;--card:rgba(255,255,255,.08);--glow:rgba(244,201,93,.45)}}
+:root[data-theme="dark"]{--bg1:#0d1330;--bg2:#2a2150;--tx:#fdf1cf;--gold:#f4c95d;--card:rgba(255,255,255,.08);--glow:rgba(244,201,93,.45)}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{background:radial-gradient(ellipse at 50% 20%,var(--bg2),var(--bg1) 70%);color:var(--tx);font-family:"Cormorant Garamond",Georgia,serif;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;padding:20px 16px;text-align:center;position:relative}
+.rays{position:fixed;left:50%;top:-30vmax;width:160vmax;height:160vmax;margin-left:-80vmax;background:repeating-conic-gradient(from 0deg,var(--glow) 0 6deg,transparent 6deg 18deg);opacity:.35;animation:spin 120s linear infinite;-webkit-mask:radial-gradient(circle,#000 0,transparent 55%);mask:radial-gradient(circle,#000 0,transparent 55%);pointer-events:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.p{position:fixed;bottom:-20px;border-radius:50%;background:var(--gold);opacity:0;animation:up linear infinite;pointer-events:none}
+@keyframes up{10%{opacity:.8}100%{transform:translateY(-110vh) translateX(30px);opacity:0}}
+main{position:relative;z-index:1;width:100%;max-width:640px}
+.cross{font-size:2.2rem;color:var(--gold);text-shadow:0 0 18px var(--glow);animation:fl 4s ease-in-out infinite}
+h1{font-size:clamp(2.2rem,8vw,3.6rem);font-weight:700;color:var(--gold);text-shadow:0 0 22px var(--glow);letter-spacing:.02em;margin:4px 0}
+.sub{font-size:clamp(1.05rem,3.6vw,1.3rem);font-style:italic;opacity:.85;margin-bottom:22px}
+@keyframes fl{50%{transform:translateY(-8px)}}
+#btn{font-size:clamp(4rem,18vw,5.5rem);width:clamp(130px,38vw,170px);height:clamp(130px,38vw,170px);border-radius:50%;border:2px solid var(--gold);background:radial-gradient(circle,var(--card),transparent 75%);cursor:pointer;box-shadow:0 0 40px var(--glow),inset 0 0 25px var(--glow);animation:pulse 2.6s ease-in-out infinite;-webkit-tap-highlight-color:transparent;transition:transform .2s}
+#btn:active{transform:scale(.92)}
+#btn.go{animation:shake .6s}
+@keyframes pulse{50%{box-shadow:0 0 70px var(--glow),inset 0 0 35px var(--glow);transform:scale(1.05)}}
+@keyframes shake{20%{transform:rotate(-12deg) scale(1.1)}40%{transform:rotate(10deg) scale(1.15)}60%{transform:rotate(-8deg)}80%{transform:rotate(5deg)}}
+.hint{margin-top:12px;font-size:1.1rem;opacity:.8}
+#card{margin-top:26px;padding:26px 22px;border-radius:22px;background:var(--card);border:1px solid var(--gold);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 10px 50px var(--glow);display:none}
+#card.show{display:block;animation:rev .9s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes rev{from{opacity:0;transform:translateY(40px) scale(.85);filter:blur(8px)}to{opacity:1;transform:none;filter:none}}
+#msg{font-size:clamp(1.5rem,5.5vw,2.1rem);font-weight:700;margin:10px 0 14px;line-height:1.2}
+#ver{font-size:clamp(1.15rem,4vw,1.45rem);font-style:italic;line-height:1.45}
+#ref{margin-top:10px;font-size:1.25rem;font-weight:700;color:var(--gold)}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.row button{font:inherit;font-size:1.1rem;font-weight:700;padding:10px 20px;border-radius:30px;border:1px solid var(--gold);background:transparent;color:var(--tx);cursor:pointer;transition:.2s}
+.row button:hover{background:var(--gold);color:var(--bg1)}
+footer{margin-top:28px;opacity:.7;font-size:1rem;font-style:italic}
+</style>
+</head>
+<body>
+<div class="rays"></div>
+<main>
+<div class="cross">✝</div>
+<h1>Pan de Vida</h1>
+<p class="sub">Alimento para tu alma, hoy y siempre</p>
+<button id="btn" aria-label="Recibir un pan de vida">🍞</button>
+<p class="hint" id="hint">Toca el pan para recibir tu mensaje</p>
+<section id="card" aria-live="polite">
+<p id="msg"></p>
+<p id="ver"></p>
+<p id="ref"></p>
+<div class="row"><button id="again">🍞 Otro pan</button><button id="copy">Compartir</button></div>
+</section>
+<footer>«No solo de pan vivirá el hombre, sino de toda palabra que sale de la boca de Dios» — Mateo 4:4</footer>
+</main>
+<script>
+const D=`Juan 3:16|De tal manera amó Dios al mundo, que ha dado a su Hijo unigénito, para que todo aquel que en él cree no se pierda, mas tenga vida eterna.|Eres amado con un amor que lo dio todo por ti.
+Jeremías 29:11|Yo sé los pensamientos que tengo acerca de vosotros, pensamientos de paz, y no de mal, para daros el fin que esperáis.|Dios tiene un futuro hermoso preparado para ti.
+Salmos 23:1|Jehová es mi pastor; nada me faltará.|Hoy nada te falta: el Pastor va contigo.
+Isaías 41:10|No temas, porque yo estoy contigo; no desmayes, porque yo soy tu Dios que te esfuerzo.|Su mano te sostiene en cada paso.
+Filipenses 4:13|Todo lo puedo en Cristo que me fortalece.|Tu fuerza viene de lo alto.
+Romanos 8:28|A los que aman a Dios, todas las cosas les ayudan a bien.|Aun lo difícil, Dios lo convierte en bendición.
+Josué 1:9|Esfuérzate y sé valiente; no temas ni desmayes, porque Jehová tu Dios estará contigo dondequiera que vayas.|Camina con valentía: no estás solo.
+Salmos 46:1|Dios es nuestro amparo y fortaleza, nuestro pronto auxilio en las tribulaciones.|Cuando todo tiembla, Él es tu refugio.
+Mateo 11:28|Venid a mí todos los que estáis trabajados y cargados, y yo os haré descansar.|Descansa hoy: entrega tu carga a Jesús.
+Proverbios 3:5|Fíate de Jehová de todo tu corazón, y no te apoyes en tu propia prudencia.|Confía, aunque aún no entiendas.
+Salmos 121:2|Mi socorro viene de Jehová, que hizo los cielos y la tierra.|Tu ayuda viene del Creador de todo.
+1 Juan 4:8|Dios es amor.|Todo comienza y termina en su amor.
+Salmos 34:18|Cercano está Jehová a los quebrantados de corazón.|Si tu corazón está herido, Él está más cerca.
+Isaías 40:31|Los que esperan a Jehová tendrán nuevas fuerzas; levantarán alas como las águilas.|Espera en Él y volarás de nuevo.
+Mateo 6:33|Buscad primeramente el reino de Dios y su justicia, y todas estas cosas os serán añadidas.|Pon a Dios primero y lo demás llegará.
+Salmos 37:4|Deléitate asimismo en Jehová, y él te concederá las peticiones de tu corazón.|Disfruta de Dios y Él cuidará tus sueños.
+Lamentaciones 3:22-23|Sus misericordias no se han agotado; nuevas son cada mañana; grande es tu fidelidad.|Hoy amaneció con misericordia nueva para ti.
+Salmos 27:1|Jehová es mi luz y mi salvación; ¿de quién temeré?|Con Dios como luz, la oscuridad no gana.
+Romanos 8:38-39|Ni la muerte, ni la vida, ni lo presente, ni lo por venir, nos podrá separar del amor de Dios.|Nada, absolutamente nada, te aparta de su amor.
+Salmos 91:11|A sus ángeles mandará acerca de ti, que te guarden en todos tus caminos.|Ángeles cuidan tus pasos hoy.
+Mateo 28:20|He aquí yo estoy con vosotros todos los días, hasta el fin del mundo.|Jesús nunca se va: está contigo.
+Números 6:24-25|Jehová te bendiga y te guarde; Jehová haga resplandecer su rostro sobre ti.|Recibe esta bendición sobre tu día.
+Salmos 118:24|Este es el día que hizo Jehová; nos gozaremos y alegraremos en él.|Hoy es un regalo: celébralo.
+Juan 14:27|La paz os dejo, mi paz os doy; no se turbe vuestro corazón, ni tenga miedo.|Su paz es distinta: profunda y real.
+Filipenses 4:6|Por nada estéis afanosos, sino sean conocidas vuestras peticiones delante de Dios en toda oración.|Cambia tu ansiedad por oración.
+Santiago 1:5|Si alguno tiene falta de sabiduría, pídala a Dios, el cual da a todos abundantemente.|Pide sabiduría: Él la da con generosidad.
+Salmos 16:11|En tu presencia hay plenitud de gozo; delicias a tu diestra para siempre.|Su presencia es tu mayor alegría.
+Efesios 2:8|Por gracia sois salvos por medio de la fe; y esto no de vosotros, pues es don de Dios.|Su gracia es un regalo que no se compra.
+1 Corintios 13:13|Ahora permanecen la fe, la esperanza y el amor; pero el mayor de ellos es el amor.|Ama: es lo que permanece.
+Salmos 139:14|Te alabaré; porque formidables, maravillosas son tus obras.|Fuiste creado con amor y propósito.
+Isaías 43:1|No temas, porque yo te redimí; te puse nombre, mío eres tú.|Dios te conoce por tu nombre.
+Sofonías 3:17|Jehová está en medio de ti, poderoso; se gozará sobre ti con alegría.|Dios canta de alegría por ti.
+Salmos 119:105|Lámpara es a mis pies tu palabra, y lumbrera a mi camino.|Su Palabra ilumina el próximo paso.
+Mateo 5:14|Vosotros sois la luz del mundo.|Brilla: alguien necesita tu luz.
+Gálatas 6:9|No nos cansemos de hacer bien; porque a su tiempo segaremos, si no desmayamos.|Tu esfuerzo no es en vano.
+Salmos 30:5|Por la noche durará el lloro, y a la mañana vendrá la alegría.|Tu amanecer ya viene.
+2 Corintios 12:9|Bástate mi gracia; porque mi poder se perfecciona en la debilidad.|Su fuerza brilla en tu fragilidad.
+Juan 14:6|Yo soy el camino, y la verdad, y la vida.|Jesús es el camino seguro.
+Salmos 103:2|Bendice, alma mía, a Jehová, y no olvides ninguno de sus beneficios.|Agradece: Dios ya te dio mucho.
+Mateo 7:7|Pedid, y se os dará; buscad, y hallaréis; llamad, y se os abrirá.|Toca la puerta: Dios escucha.
+Proverbios 16:3|Encomienda a Jehová tus obras, y tus pensamientos serán afirmados.|Entrega tus planes y Él los afirmará.
+Salmos 28:7|Jehová es mi fortaleza y mi escudo; en él confió mi corazón, y fui ayudado.|Él es tu escudo en la batalla.
+Hebreos 11:1|Es, pues, la fe la certeza de lo que se espera, la convicción de lo que no se ve.|Cree incluso antes de ver.
+Juan 15:12|Este es mi mandamiento: que os améis unos a otros, como yo os he amado.|Ama a otros como Cristo te amó.
+Salmos 62:1|En Dios solamente está acallada mi alma; de él viene mi salvación.|Calla tu alma: Dios está obrando.
+Romanos 15:13|El Dios de esperanza os llene de todo gozo y paz en el creer.|Que hoy desborde tu esperanza.
+Isaías 26:3|Tú guardarás en completa paz a aquel cuyo pensamiento en ti persevera.|Pensar en Dios trae paz completa.
+Salmos 55:22|Echa sobre Jehová tu carga, y él te sustentará.|No cargues solo: Él te sostiene.
+Mateo 19:26|Para Dios todo es posible.|Lo imposible es su especialidad.
+Colosenses 3:23|Todo lo que hagáis, hacedlo de corazón, como para el Señor.|Haz todo con amor y para Dios.
+Salmos 100:5|Jehová es bueno; para siempre es su misericordia, y su verdad por todas las generaciones.|Dios es bueno, siempre.
+1 Pedro 5:7|Echando toda vuestra ansiedad sobre él, porque él tiene cuidado de vosotros.|A Dios le importas profundamente.
+Deuteronomio 31:6|Esforzaos y cobrad ánimo; no temáis, porque Jehová tu Dios es el que va contigo; no te dejará ni te desamparará.|Él nunca te abandona.
+Salmos 145:18|Cercano está Jehová a todos los que le invocan.|Llámalo: está cerca.
+Juan 10:10|Yo he venido para que tengan vida, y para que la tengan en abundancia.|Dios quiere una vida plena para ti.
+Efesios 3:20|A aquel que es poderoso para hacer todas las cosas mucho más abundantemente de lo que pedimos o entendemos.|Dios puede darte más de lo que imaginas.
+Salmos 73:26|Mi carne y mi corazón desfallecen; mas la roca de mi corazón es Dios.|Cuando flaqueas, Él es tu roca.
+Proverbios 18:10|Torre fuerte es el nombre de Jehová; a él correrá el justo, y será levantado.|Su nombre es tu fortaleza.
+Mateo 5:9|Bienaventurados los pacificadores, porque ellos serán llamados hijos de Dios.|Siembra paz y serás bendición.
+Santiago 4:8|Acercaos a Dios, y él se acercará a vosotros.|Da un paso y Él da diez.
+Salmos 107:1|Alabad a Jehová, porque él es bueno; porque para siempre es su misericordia.|Da gracias: su misericordia no termina.
+2 Timoteo 1:7|No nos ha dado Dios espíritu de cobardía, sino de poder, de amor y de dominio propio.|Dios te dio poder, amor y paz interior.
+Salmos 4:8|En paz me acostaré, y asimismo dormiré; porque solo tú, Jehová, me haces vivir confiado.|Duerme tranquilo: Él vela por ti.
+Isaías 54:10|Los montes se moverán, pero no se apartará de ti mi misericordia.|Su amor es más firme que los montes.
+Mateo 6:26|Mirad las aves del cielo, que no siembran ni siegan; y vuestro Padre celestial las alimenta.|Si cuida a las aves, cuánto más a ti.
+Salmos 90:17|Sea la luz de Jehová nuestro Dios sobre nosotros, y la obra de nuestras manos confirma.|Que Dios bendiga el trabajo de tus manos.
+Romanos 12:12|Gozosos en la esperanza; sufridos en la tribulación; constantes en la oración.|Persevera orando, con esperanza.
+Juan 8:12|Yo soy la luz del mundo; el que me sigue, no andará en tinieblas.|Sigue la Luz y no tropezarás.
+Salmos 126:5|Los que sembraron con lágrimas, con regocijo segarán.|Tus lágrimas se volverán cosecha.
+Hebreos 13:5|No te desampararé, ni te dejaré.|Su promesa es eterna: no te dejará.
+Miqueas 7:7|Yo miraré a Jehová, esperaré al Dios de mi salvación; el Dios mío me oirá.|Dios te escucha, aunque no lo sientas.
+Salmos 84:11|Sol y escudo es Jehová Dios; gracia y gloria dará Jehová.|Él te cubre de gracia y luz.
+Juan 16:33|En el mundo tendréis aflicción; pero confiad, yo he vencido al mundo.|Jesús ya venció por ti.
+1 Juan 4:19|Nosotros le amamos a él, porque él nos amó primero.|Su amor llegó antes que el tuyo.
+Proverbios 3:6|Reconócelo en todos tus caminos, y él enderezará tus veredas.|Inclúyelo en todo y Él ordena tu camino.
+Salmos 40:1|Esperé pacientemente a Jehová, y se inclinó a mí, y oyó mi clamor.|Dios se inclina para oírte.
+Mateo 6:34|No os afanéis por el día de mañana, porque el día de mañana traerá su afán.|Vive hoy; mañana está en sus manos.
+Isaías 12:2|He aquí Dios es salvación mía; me aseguraré y no temeré.|Con Dios, el miedo pierde poder.
+Salmos 147:3|Él sana a los quebrantados de corazón, y venda sus heridas.|Dios cura lo que nadie ve.
+Romanos 5:8|Dios muestra su amor para con nosotros, en que siendo aún pecadores, Cristo murió por nosotros.|Te amó incluso antes de que lo buscaras.
+Salmos 25:4|Muéstrame, oh Jehová, tus caminos; enséñame tus sendas.|Pídele dirección y Él te guiará.
+Gálatas 5:22|El fruto del Espíritu es amor, gozo, paz, paciencia, benignidad, bondad, fe.|Deja que hoy florezca su Espíritu en ti.
+Éxodo 14:14|Jehová peleará por vosotros, y vosotros estaréis tranquilos.|Descansa: Él pelea tus batallas.
+Salmos 36:7|¡Cuán preciosa, oh Dios, es tu misericordia! Por eso los hijos de los hombres se amparan bajo la sombra de tus alas.|Refúgiate bajo sus alas.
+Juan 13:34|Un mandamiento nuevo os doy: que os améis unos a otros.|El amor es la señal de los hijos de Dios.
+Salmos 138:8|Jehová cumplirá su propósito en mí; tu misericordia, oh Jehová, es para siempre.|Dios terminará lo que empezó en ti.
+Filipenses 1:6|El que comenzó en vosotros la buena obra, la perfeccionará hasta el día de Jesucristo.|Aún no termina: Dios sigue obrando.
+Isaías 55:12|Con alegría saldréis, y con paz seréis vueltos.|Saldrás con alegría y volverás en paz.
+Salmos 18:2|Jehová, roca mía y castillo mío, y mi libertador; Dios mío, fortaleza mía, en él confiaré.|Dios es tu castillo seguro.
+Mateo 5:16|Así alumbre vuestra luz delante de los hombres, para que vean vuestras buenas obras.|Que tu bondad hable de Dios.
+Salmos 133:1|¡Mirad cuán bueno y cuán delicioso es habitar los hermanos juntos en armonía!|Cultiva la unidad: es un regalo.
+Proverbios 17:22|El corazón alegre constituye buen remedio; mas el espíritu triste seca los huesos.|Sonríe: la alegría sana.
+Salmos 8:3-4|Cuando veo tus cielos, la luna y las estrellas que tú formaste, ¿qué es el hombre, para que tengas de él memoria?|Dios te recuerda entre millones de estrellas.
+Lucas 1:37|Porque nada hay imposible para Dios.|Ningún sueño es demasiado grande para Él.
+2 Crónicas 7:14|Si se humillare mi pueblo, y oraren, y buscaren mi rostro, yo oiré desde los cielos.|Ora con humildad: el cielo escucha.
+Salmos 119:11|En mi corazón he guardado tus dichos, para no pecar contra ti.|Guarda su Palabra en tu corazón.
+Apocalipsis 21:4|Enjugará Dios toda lágrima de los ojos de ellos; y ya no habrá más llanto.|Un día toda lágrima será secada.
+Mateo 5:3|Bienaventurados los pobres en espíritu, porque de ellos es el reino de los cielos.|Los humildes de corazón heredan el cielo.
+Salmos 150:6|Todo lo que respira alabe a Jah. Aleluya.|Cada respiración es una oración de gracias.
+Juan 1:5|La luz en las tinieblas resplandece, y las tinieblas no prevalecieron contra ella.|La luz de Dios siempre gana.`.split("\n").map(l=>l.split("|"));
+const $=id=>document.getElementById(id);
+let bag=[],shown=0;
+function next(){if(!bag.length){bag=D.map((_,i)=>i);for(let i=bag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[bag[i],bag[j]]=[bag[j],bag[i]]}}return bag.pop()}
+function pan(){
+  const b=$("btn");b.classList.remove("go");void b.offsetWidth;b.classList.add("go");
+  const i=next(),[ref,ver,msg]=D[i];shown++;
+  setTimeout(()=>{
+    const c=$("card");c.classList.remove("show");void c.offsetWidth;
+    $("msg").textContent=msg;$("ver").textContent="«"+ver+"»";$("ref").textContent="— "+ref;
+    c.classList.add("show");$("hint").textContent="Toca otra vez para recibir un nuevo pan";
+    c.scrollIntoView({behavior:"smooth",block:"center"});
+    for(let k=0;k<14;k++)spark();
+  },450);
+}
+function spark(){const s=document.createElement("span");s.textContent="✨";s.style.cssText="position:fixed;z-index:5;pointer-events:none;font-size:"+(14+Math.random()*16)+"px;left:"+(20+Math.random()*60)+"vw;top:"+(30+Math.random()*30)+"vh;transition:all 1.4s ease-out;opacity:1";document.body.appendChild(s);requestAnimationFrame(()=>{s.style.transform="translate("+(Math.random()*120-60)+"px,-"+(60+Math.random()*100)+"px) scale(1.6)";s.style.opacity="0"});setTimeout(()=>s.remove(),1500)}
+$("btn").onclick=pan;$("again").onclick=pan;
+$("copy").onclick=async()=>{const t=$("msg").textContent+"\n"+$("ver").textContent+"\n"+$("ref").textContent+"\n\n🍞 Pan de Vida";try{if(navigator.share){await navigator.share({text:t})}else{await navigator.clipboard.writeText(t);$("copy").textContent="¡Copiado!";setTimeout(()=>$("copy").textContent="Compartir",1500)}}catch(e){}};
+for(let i=0;i<28;i++){const p=document.createElement("span");p.className="p";const s=2+Math.random()*5;p.style.cssText="left:"+Math.random()*100+"vw;width:"+s+"px;height:"+s+"px;animation-duration:"+(8+Math.random()*12)+"s;animation-delay:"+Math.random()*10+"s";document.body.appendChild(p)}
+</script>
+</body>
+</html>
